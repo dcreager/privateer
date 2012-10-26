@@ -17,4 +17,5 @@ else
 fi
 
 PATH="$PWD/src:$PATH" \
+TESTS=$(realpath $TESTS) \
   "$CRAM" "$@" "$TESTS"

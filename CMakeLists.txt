@@ -33,9 +33,17 @@ string(REGEX REPLACE "-dev.*" "-dev" BASE_VERSION "${VERSION}")
 
 find_package(PkgConfig)
 
+pkg_check_modules(YAML REQUIRED yaml-0.1)
+include_directories(${YAML_INCLUDE_DIRS})
+link_directories(${YAML_LIBRARY_DIRS})
+
 pkg_check_modules(CORK REQUIRED libcork)
 include_directories(${CORK_INCLUDE_DIRS})
 link_directories(${CORK_LIBRARY_DIRS})
+
+pkg_check_modules(CLOG REQUIRED clogger)
+include_directories(${CLOG_INCLUDE_DIRS})
+link_directories(${CLOG_LIBRARY_DIRS})
 
 #-----------------------------------------------------------------------
 # Set some options

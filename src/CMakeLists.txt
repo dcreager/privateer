@@ -13,7 +13,7 @@ include_directories(../include)
 # Build the library
 
 set(LIBPRIVATEER_SRC
-    libprivateer/foo.c
+    libprivateer/registry.c
 )
 
 add_library(libprivateer SHARED ${LIBPRIVATEER_SRC})
@@ -21,10 +21,21 @@ set_target_properties(libprivateer PROPERTIES
     OUTPUT_NAME privateer
     SOVERSION 0.0.0)
 target_link_libraries(libprivateer
+    ${YAML_LIBRARIES}
     ${CORK_LIBRARIES}
+    ${CLOG_LIBRARIES}
 )
 
 install(TARGETS libprivateer DESTINATION lib)
+
+
+set(PRIVATEER_SRC
+    privateer/privateer.c
+)
+
+add_executable(privateer ${PRIVATEER_SRC})
+target_link_libraries(privateer libprivateer)
+install(TARGETS privateer DESTINATION bin)
 
 #-----------------------------------------------------------------------
 # Generate the pkg-config file
