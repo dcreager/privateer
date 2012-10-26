@@ -2,10 +2,10 @@
 /.build/
 
 RELEASE-VERSION
-APPNAME.pc
+privateer.pc
 
-/APPNAME*.tar.gz
-/APPNAME*.tar.bz2
+/privateer*.tar.gz
+/privateer*.tar.bz2
 
 *.[oa]
 *.os

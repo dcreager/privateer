@@ -5,9 +5,10 @@ includedir=${prefix}/include
 sharedir=${prefix}/share
 sphinxdir=${sharedir}/doc/APPNAME/html
 
-Name: APPNAME
-Description: FILL_THIS_IN
+Name: privateer
+Description: Modular configuration directory manager
 Version: @VERSION@
-URL: FILL_THIS_IN
-Libs: -L${libdir} -lAPPNAME
+URL: http://github.com/redjack/privateer/
+Libs: -L${libdir} -lprivateer
 Cflags: -I${includedir}
+Requires: libcork
