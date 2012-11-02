@@ -84,4 +84,18 @@ int
 pvt_registry_load_all(struct pvt_registry *reg, void *ud);
 
 
+/*-----------------------------------------------------------------------
+ * Iteration
+ */
+
+typedef int
+(*pvt_plugin_callback)(struct pvt_registry *reg,
+                       struct pvt_plugin_descriptor *desc, void *ud);
+
+/* Invoke the callback function for each plugin in the registry. */
+int
+pvt_registry_iterate_plugins(struct pvt_registry *reg,
+                             pvt_plugin_callback callback, void *ud);
+
+
 #endif /* PRIVATEER_REGISTRY_H */

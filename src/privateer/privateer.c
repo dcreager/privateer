@@ -202,6 +202,86 @@ get_run(int argc, char **argv)
 
 
 /*-----------------------------------------------------------------------
+ * list command
+ */
+
+#define LIST_SHORT_DESC \
+    "List the plugins in a Privateer registry"
+
+#define LIST_USAGE_SUFFIX \
+    "[options]"
+
+#define LIST_HELP_TEXT \
+"Lists the names of all of the plugins in a Privateer registry.\n" \
+"\n" \
+"Options:\n" \
+REGISTRY_HELP \
+
+static int
+list_options(int argc, char **argv);
+
+static void
+list_run(int argc, char **argv);
+
+static struct cork_command  list =
+    cork_leaf_command("list",
+                      LIST_SHORT_DESC,
+                      LIST_USAGE_SUFFIX,
+                      LIST_HELP_TEXT,
+                      list_options, list_run);
+
+#define LIST_OPTS "+" REGISTRY_SHORTOPTS
+
+static struct option  list_opts[] = {
+    REGISTRY_LONGOPTS,
+    { NULL, 0, NULL, 0 }
+};
+
+static int
+list_options(int argc, char **argv)
+{
+    int  ch;
+    registry_paths_init();
+    while ((ch = getopt_long(argc, argv, LIST_OPTS, list_opts, NULL)) != -1) {
+        if (registry_options(ch)) {
+            /* cool */
+        } else {
+            cork_command_show_help(&list, NULL);
+            exit(EXIT_FAILURE);
+        }
+    }
+    return optind;
+}
+
+static int
+print_plugin(struct pvt_registry *reg, struct pvt_plugin_descriptor *desc,
+             void *ud)
+{
+    printf("%s: %s\n", desc->name, desc->descriptor_path);
+    return 0;
+}
+
+static void
+list_run(int argc, char **argv)
+{
+    struct pvt_registry  *reg;
+
+    /* Open the input file. */
+    if (argc > 0) {
+        cork_command_show_help(&list, "Too many arguments provided.");
+        exit(EXIT_FAILURE);
+    }
+
+    reg = pvt_registry_new();
+    registry_add_paths(reg);
+    ri_check_exit(pvt_registry_iterate_plugins(reg, print_plugin, NULL));
+    pvt_registry_free(reg);
+    registry_paths_done();
+    exit(EXIT_SUCCESS);
+}
+
+
+/*-----------------------------------------------------------------------
  * load command
  */
 
@@ -283,11 +363,12 @@ load_run(int argc, char **argv)
  */
 
 static struct cork_command  *root_subcommands[] = {
-    &get, &load, NULL
+    &get, &list, &load, NULL
 };
 
 static struct cork_command  root =
     cork_command_set("privateer", NULL, NULL, root_subcommands);
+
 
 /*-----------------------------------------------------------------------
  * Driver
