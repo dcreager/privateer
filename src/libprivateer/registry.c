@@ -234,6 +234,7 @@ struct pvt_plugin {
     struct pvt_plugin_descriptor  *desc;
     void  *library;
     struct pvt_loader  *loader;
+    bool  loaded;
 };
 
 static struct pvt_plugin *
@@ -300,6 +301,7 @@ pvt_plugin_new(struct pvt_plugin_descriptor *desc)
     plugin->desc = desc;
     plugin->library = library;
     plugin->loader = loader;
+    plugin->loaded = false;
     cork_buffer_done(&buf);
     return plugin;
 }
@@ -487,4 +489,108 @@ pvt_registry_add_directory(struct pvt_registry *self, const char *path,
         walker.extension = extension;
     }
     return cork_walk_directory(path, &walker.parent);
+}
+
+
+/*-----------------------------------------------------------------------
+ * Loading everything
+ */
+
+static cork_hash
+constant_hasher(const void *vk)
+{
+    return (cork_hash) (uintptr_t) vk;
+}
+
+static bool
+constant_comparator(const void *vk1, const void *vk2)
+{
+    return vk1 == vk2;
+}
+
+static int
+pvt_registry_load_one_plugin(struct pvt_registry *self,
+                             struct cork_hash_table *loading,
+                             struct pvt_plugin *plugin, void *ud)
+{
+    size_t  i;
+
+    /* Have we already loaded this plugin? */
+    if (plugin->loaded) {
+        return 0;
+    }
+
+    /* If we've started loading this plugin, but haven't finished, then we've
+     * got a circular chain of dependencies. */
+    if (cork_hash_table_get(loading, plugin) != NULL) {
+        pvt_circular_dependency
+            ("Circular dependency when loading %s", plugin->desc->name);
+        return -1;
+    }
+
+    /* Mark that we've started loading this plugin. */
+    cork_hash_table_put(loading, plugin, plugin, NULL, NULL, NULL);
+
+    /* Load in any dependencies first. */
+    for (i = 0; i < plugin->desc->dependency_count; i++) {
+        const char  *dep_name = plugin->desc->dependencies[i];
+        struct pvt_plugin  *dep_plugin  =
+            cork_hash_table_get(&self->plugins, (void *) dep_name);
+        if (dep_plugin == NULL) {
+            pvt_undefined("Missing dependency %s for plugin %s",
+                          dep_name, plugin->desc->name);
+            return -1;
+        } else {
+            rii_check(pvt_registry_load_one_plugin
+                      (self, loading, dep_plugin, ud));
+        }
+    }
+
+    /* Then call the plugin's loader function, and mark that we finished loading
+     * the plugin. */
+    rii_check(plugin->loader->load(self, plugin->desc, ud));
+    plugin->loaded = true;
+    return 0;
+}
+
+int
+pvt_registry_load_one(struct pvt_registry *self, const char *name, void *ud)
+{
+    struct cork_hash_table  loading;
+    struct pvt_plugin  *plugin;
+
+    plugin = cork_hash_table_get(&self->plugins, (void *) name);
+    if (plugin == NULL) {
+        pvt_undefined("Unknown plugin %s", plugin->desc->name);
+        return -1;
+    }
+
+    cork_hash_table_init(&loading, 0, constant_hasher, constant_comparator);
+    ei_check(pvt_registry_load_one_plugin(self, &loading, plugin, ud));
+    cork_hash_table_done(&loading);
+    return 0;
+
+error:
+    cork_hash_table_done(&loading);
+    return -1;
+}
+
+int
+pvt_registry_load_all(struct pvt_registry *self, void *ud)
+{
+    struct cork_hash_table  loading;
+    struct cork_hash_table_iterator  iter;
+    struct cork_hash_table_entry  *entry;
+    cork_hash_table_init(&loading, 0, constant_hasher, constant_comparator);
+    cork_hash_table_iterator_init(&self->plugins, &iter);
+    while ((entry = cork_hash_table_iterator_next(&iter)) != NULL) {
+        struct pvt_plugin  *plugin = entry->value;
+        ei_check(pvt_registry_load_one_plugin(self, &loading, plugin, ud));
+    }
+    cork_hash_table_done(&loading);
+    return 0;
+
+error:
+    cork_hash_table_done(&loading);
+    return -1;
 }

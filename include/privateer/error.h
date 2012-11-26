@@ -18,6 +18,7 @@
 
 enum pvt_error {
     PVT_BAD_LIBRARY,
+    PVT_CIRCULAR_DEPENDENCY,
     PVT_REDEFINED,
     PVT_UNDEFINED,
     PVT_YAML_ERROR
@@ -27,6 +28,8 @@ enum pvt_error {
 #define pvt_set_error(code, ...) (cork_error_set(PVT_ERROR, code, __VA_ARGS__))
 #define pvt_bad_library(...) \
     pvt_set_error(PVT_BAD_LIBRARY, __VA_ARGS__)
+#define pvt_circular_dependency(...) \
+    pvt_set_error(PVT_CIRCULAR_DEPENDENCY, __VA_ARGS__)
 #define pvt_redefined(...) \
     pvt_set_error(PVT_REDEFINED, __VA_ARGS__)
 #define pvt_undefined(...) \

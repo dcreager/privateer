@@ -14,6 +14,10 @@
 #include <libcork/core.h>
 
 
+/*-----------------------------------------------------------------------
+ * Registries and plugins
+ */
+
 struct pvt_plugin_descriptor {
     const char  *descriptor_path;
     const char  *name;
@@ -47,6 +51,10 @@ struct pvt_plugin_descriptor *
 pvt_registry_get_descriptor(struct pvt_registry *reg, const char *name);
 
 
+/*-----------------------------------------------------------------------
+ * Loading
+ */
+
 /* This has to be a struct, not a bare function pointer, since C doesn't require
  * function pointers to be compatible with (void *). */
 struct pvt_loader {
@@ -54,7 +62,6 @@ struct pvt_loader {
     (*load)(struct pvt_registry *reg, struct pvt_plugin_descriptor *desc,
             void *ud);
 };
-
 
 #define pvt_define_loader(name) \
 static int \
@@ -66,6 +73,15 @@ struct pvt_loader  name = { name##__loader }; \
 static int \
 name##__loader(struct pvt_registry *reg, struct pvt_plugin_descriptor *desc, \
                void *ud)
+
+/* We will guarantee that all dependencies have been loaded before calling a
+ * plugin's loader function. */
+
+int
+pvt_registry_load_one(struct pvt_registry *self, const char *name, void *ud);
+
+int
+pvt_registry_load_all(struct pvt_registry *reg, void *ud);
 
 
 #endif /* PRIVATEER_REGISTRY_H */
