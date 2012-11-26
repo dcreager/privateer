@@ -8,12 +8,10 @@
  * ----------------------------------------------------------------------
  */
 
-#ifndef PRIVATEER_H
-#define PRIVATEER_H
+#ifndef PRIVATEER_CONFIG_H
+#define PRIVATEER_CONFIG_H
 
-/* include all of the parts */
-#include <privateer/config.h>
-#include <privateer/error.h>
-#include <privateer/registry.h>
+#define PVT_LIBRARY_PREFIX "@CMAKE_SHARED_LIBRARY_PREFIX@"
+#define PVT_LIBRARY_SUFFIX "@CMAKE_SHARED_LIBRARY_SUFFIX@"
 
-#endif /* PRIVATEER_H */
+#endif /* PRIVATEER_CONFIG_H */

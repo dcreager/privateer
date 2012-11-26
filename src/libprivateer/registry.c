@@ -8,6 +8,7 @@
  * ----------------------------------------------------------------------
  */
 
+#include <dlfcn.h>
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
@@ -19,6 +20,7 @@
 #include <libcork/helpers/errors.h>
 #include <yaml.h>
 
+#include "privateer/config.h"
 #include "privateer/error.h"
 #include "privateer/registry.h"
 
@@ -79,7 +81,7 @@ pvt_registry_load_yaml_file(const char *filename, yaml_document_t *dest)
 
 
 /*-----------------------------------------------------------------------
- * Plugin descriptors
+ * Plugin plugins
  */
 
 static struct pvt_plugin_descriptor *
@@ -225,11 +227,100 @@ pvt_plugin_descriptor_free(struct pvt_plugin_descriptor *desc)
 
 
 /*-----------------------------------------------------------------------
- * Registry life-cycle functions
+ * Plugins
+ */
+
+struct pvt_plugin {
+    struct pvt_plugin_descriptor  *desc;
+    void  *library;
+    struct pvt_loader  *loader;
+};
+
+static struct pvt_plugin *
+pvt_plugin_new(struct pvt_plugin_descriptor *desc)
+{
+    struct pvt_plugin  *plugin;
+    struct cork_buffer  buf = CORK_BUFFER_INIT();
+    const char  *raw_library_name = desc->library_path;
+    const char  *library_name = raw_library_name;
+    const char  *lib_error;
+    void  *library;
+    void  *loader;
+
+    clog_debug("Loading %s for plugin %s", raw_library_name, desc->name);
+
+    /* If the library name doesn't contain a slash, assume that it's a "short"
+     * library name.  Turn it into a full library filename (still not including
+     * a path, though), by adding this platform's prefix and suffix. */
+    if (library_name != NULL && strchr(library_name, '/') == NULL) {
+        cork_buffer_printf
+            (&buf, "%s%s%s",
+             PVT_LIBRARY_PREFIX, library_name, PVT_LIBRARY_SUFFIX);
+        library_name = buf.buf;
+    }
+
+    /* Load in the library that contains this registration */
+    library = dlopen(library_name, RTLD_LAZY | RTLD_LOCAL);
+    if (library == NULL) {
+        lib_error = dlerror();
+        if (raw_library_name == NULL) {
+            raw_library_name = "[default]";
+        }
+        pvt_bad_library("Cannot open library %s for plugin %s\n%s",
+                        raw_library_name, desc->name, lib_error);
+        pvt_plugin_descriptor_free(desc);
+        cork_buffer_done(&buf);
+        return NULL;
+    }
+
+    /* Extract the registration struct */
+    loader = dlsym(library, desc->loader_name);
+    lib_error = dlerror();
+    if (lib_error != NULL) {
+        if (raw_library_name == NULL) {
+            raw_library_name = "[default]";
+        }
+        pvt_bad_library("Cannot load symbol %s from %s for plugin %s\n%s",
+                        raw_library_name, desc->loader_name,
+                        desc->name, lib_error);
+        dlclose(library);
+        pvt_plugin_descriptor_free(desc);
+        cork_buffer_done(&buf);
+        return NULL;
+    } else if (loader == NULL) {
+        pvt_bad_library("No symbol named %s in %s for plugin %s",
+                        raw_library_name, desc->loader_name, desc->name);
+        dlclose(library);
+        pvt_plugin_descriptor_free(desc);
+        cork_buffer_done(&buf);
+        return NULL;
+    }
+
+    plugin = cork_new(struct pvt_plugin);
+    plugin->desc = desc;
+    plugin->library = library;
+    plugin->loader = loader;
+    cork_buffer_done(&buf);
+    return plugin;
+}
+
+static void
+pvt_plugin_free(struct pvt_plugin *plugin)
+{
+    pvt_plugin_descriptor_free(plugin->desc);
+    if (plugin->library != NULL) {
+        dlclose(plugin->library);
+    }
+    free(plugin);
+}
+
+
+/*-----------------------------------------------------------------------
+ * Registry maintenance
  */
 
 struct pvt_registry {
-    struct cork_hash_table  descriptors;
+    struct cork_hash_table  plugins;
 };
 
 static cork_hash
@@ -253,8 +344,7 @@ struct pvt_registry *
 pvt_registry_new(void)
 {
     struct pvt_registry  *self = cork_new(struct pvt_registry);
-    cork_hash_table_init
-        (&self->descriptors, 0, string_hasher, string_comparator);
+    cork_hash_table_init(&self->plugins, 0, string_hasher, string_comparator);
     return self;
 }
 
@@ -263,11 +353,11 @@ pvt_registry_free(struct pvt_registry *self)
 {
     struct cork_hash_table_iterator  iter;
     struct cork_hash_table_entry  *entry;
-    cork_hash_table_iterator_init(&self->descriptors, &iter);
+    cork_hash_table_iterator_init(&self->plugins, &iter);
     while ((entry = cork_hash_table_iterator_next(&iter)) != NULL) {
-        pvt_plugin_descriptor_free(entry->value);
+        pvt_plugin_free(entry->value);
     }
-    cork_hash_table_done(&self->descriptors);
+    cork_hash_table_done(&self->plugins);
     free(self);
 }
 
@@ -275,11 +365,14 @@ pvt_registry_free(struct pvt_registry *self)
 struct pvt_plugin_descriptor *
 pvt_registry_get_descriptor(struct pvt_registry *self, const char *name)
 {
-    void  *result = cork_hash_table_get(&self->descriptors, (void *) name);
-    if (result == NULL) {
+    struct pvt_plugin  *plugin =
+        cork_hash_table_get(&self->plugins, (void *) name);
+    if (plugin == NULL) {
         pvt_undefined("No plugin named \"%s\"", name);
+        return NULL;
+    } else {
+        return plugin->desc;
     }
-    return result;
 }
 
 
@@ -302,10 +395,10 @@ pvt_registry_add_plugin(struct pvt_registry *self,
     bool  is_new;
     struct cork_hash_table_entry  *entry =
         cork_hash_table_get_or_create
-        (&self->descriptors, (void *) desc->name, &is_new);
+        (&self->plugins, (void *) desc->name, &is_new);
 
     if (is_new) {
-        entry->value = desc;
+        rip_check(entry->value = pvt_plugin_new(desc));
         return 0;
     } else {
         struct pvt_plugin_descriptor  *old = entry->value;
@@ -315,6 +408,7 @@ pvt_registry_add_plugin(struct pvt_registry *self,
         pvt_plugin_descriptor_free(desc);
         return -1;
     }
+
 }
 
 int

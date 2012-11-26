@@ -8,12 +8,12 @@
  * ----------------------------------------------------------------------
  */
 
-#ifndef PRIVATEER_H
-#define PRIVATEER_H
+#include <stdio.h>
 
-/* include all of the parts */
-#include <privateer/config.h>
-#include <privateer/error.h>
-#include <privateer/registry.h>
+#include "privateer.h"
 
-#endif /* PRIVATEER_H */
+pvt_define_loader(pvt_alpha)
+{
+    printf("Loading alpha.\n");
+    return 0;
+}

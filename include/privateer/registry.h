@@ -47,4 +47,25 @@ struct pvt_plugin_descriptor *
 pvt_registry_get_descriptor(struct pvt_registry *reg, const char *name);
 
 
+/* This has to be a struct, not a bare function pointer, since C doesn't require
+ * function pointers to be compatible with (void *). */
+struct pvt_loader {
+    int
+    (*load)(struct pvt_registry *reg, struct pvt_plugin_descriptor *desc,
+            void *ud);
+};
+
+
+#define pvt_define_loader(name) \
+static int \
+name##__loader(struct pvt_registry *reg, struct pvt_plugin_descriptor *desc, \
+               void *ud); \
+\
+struct pvt_loader  name = { name##__loader }; \
+\
+static int \
+name##__loader(struct pvt_registry *reg, struct pvt_plugin_descriptor *desc, \
+               void *ud)
+
+
 #endif /* PRIVATEER_REGISTRY_H */

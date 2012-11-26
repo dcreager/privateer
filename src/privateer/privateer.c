@@ -145,7 +145,7 @@ privateer(int argc, char **argv)
             printf("Plugin:       %s\n"
                    "Descriptor:   %s\n"
                    "Library:      %s\n"
-                   "              %s\n",
+                   "Loader:       %s\n",
                    desc->name,
                    desc->descriptor_path,
                    desc->library_path == NULL? "[default]": desc->library_path,

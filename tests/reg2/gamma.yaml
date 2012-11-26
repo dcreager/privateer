@@ -1,5 +1,5 @@
 name: gamma
-library: libprivateer
-loader: pvt_load_gamma
+library: privateer-tests
+loader: pvt_gamma
 dependencies:
   - beta

@@ -1,5 +1,5 @@
 name: beta
-library: libprivateer
-loader: pvt_load_beta
+library: privateer-tests
+loader: pvt_beta
 dependencies:
   - alpha
