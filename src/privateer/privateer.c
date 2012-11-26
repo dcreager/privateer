@@ -146,8 +146,10 @@ privateer(int argc, char **argv)
                    "Descriptor:   %s\n"
                    "Library:      %s\n"
                    "              %s\n",
-                   desc->name, desc->descriptor_path,
-                   desc->library_path, desc->loader_name);
+                   desc->name,
+                   desc->descriptor_path,
+                   desc->library_path == NULL? "[default]": desc->library_path,
+                   desc->loader_name);
 
             if (desc->dependencies != NULL) {
                 size_t  j;

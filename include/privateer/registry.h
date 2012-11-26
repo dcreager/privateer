@@ -11,6 +11,8 @@
 #ifndef PRIVATEER_REGISTRY_H
 #define PRIVATEER_REGISTRY_H
 
+#include <libcork/core.h>
+
 
 struct pvt_plugin_descriptor {
     const char  *descriptor_path;

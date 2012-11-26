@@ -88,10 +88,14 @@ pvt_plugin_descriptor_new(const char *descriptor_path, const char *name,
 {
     struct pvt_plugin_descriptor  *desc =
         cork_new(struct pvt_plugin_descriptor);
-    clog_debug("Loaded plugin %s from %s", name, descriptor_path);
+    clog_debug("Read plugin descriptor %s from %s", name, descriptor_path);
     desc->descriptor_path = cork_strdup(descriptor_path);
     desc->name = cork_strdup(name);
-    desc->library_path = cork_strdup(library_path);
+    if (library_path == NULL) {
+        desc->library_path = NULL;
+    } else {
+        desc->library_path = cork_strdup(library_path);
+    }
     desc->loader_name = cork_strdup(loader_name);
     desc->dependency_count = 0;
     desc->dependencies = NULL;
@@ -164,7 +168,6 @@ pvt_plugin_descriptor_from_yaml(const char *path, yaml_document_t *doc)
 
     /* Verify that the required fields exist */
     verify_exists(name);
-    verify_exists(library);
     verify_exists(loader);
 
     /* If there's a dependencies field, make sure it's an array of strings */
@@ -206,7 +209,9 @@ pvt_plugin_descriptor_free(struct pvt_plugin_descriptor *desc)
 {
     cork_strfree(desc->descriptor_path);
     cork_strfree(desc->name);
-    cork_strfree(desc->library_path);
+    if (desc->library_path != NULL) {
+        cork_strfree(desc->library_path);
+    }
     cork_strfree(desc->loader_name);
     if (desc->dependencies != NULL) {
         size_t  i;
