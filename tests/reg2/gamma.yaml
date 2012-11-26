@@ -1,0 +1,5 @@
+name: gamma
+library: libprivateer
+loader: pvt_load_gamma
+dependencies:
+  - beta

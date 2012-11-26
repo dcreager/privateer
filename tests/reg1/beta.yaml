@@ -1,0 +1,5 @@
+name: beta
+library: libprivateer
+loader: pvt_load_beta
+dependencies:
+  - alpha

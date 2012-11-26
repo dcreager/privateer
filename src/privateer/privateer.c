@@ -45,16 +45,18 @@ registry_paths_add(const char *path)
     cork_array_append(&registry_paths, path);
 }
 
-static size_t
-registry_path_count(void)
+static void
+registry_add_paths(struct pvt_registry *reg)
 {
-    return cork_array_size(&registry_paths);
-}
-
-static const char **
-registry_paths_get(void)
-{
-    return &cork_array_at(&registry_paths, 0);
+    size_t  i;
+    for (i = 0; i < cork_array_size(&registry_paths); i++) {
+        const char  *path = cork_array_at(&registry_paths, i);
+        int  rc = pvt_registry_add_directory(reg, path, ".yaml");
+        if (CORK_UNLIKELY(rc != 0)) {
+            fprintf(stderr, "%s\n", cork_error_message());
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 
@@ -63,15 +65,14 @@ registry_paths_get(void)
  */
 
 #define SHORT_DESC \
-    "Print out the contents of a Privateer configuration file"
+    "Print out the contents of a Privateer plugin"
 
 #define USAGE_SUFFIX \
-    "[options] <entity name> <section name>"
+    "[options] <plugin name>..."
 
 #define HELP_TEXT \
-"Loads in the YAML configuration file for a particular entity and section\n" \
-"in a Privateer registry, then prints out a normalized version of that\n" \
-"YAML.\n" \
+"Loads in the YAML descriptor file for a particular plugin in a Privateer\n" \
+"registry, then prints out information about that plugin.\n" \
 "\n" \
 "Options:\n" \
 "  --registry <registry path>\n" \
@@ -118,42 +119,50 @@ privateer_options(int argc, char **argv)
 static void
 privateer(int argc, char **argv)
 {
+    size_t  i;
     struct pvt_registry  *reg;
-    yaml_document_t  doc;
-    yaml_emitter_t  emit;
 
     /* Open the input file. */
     if (argc == 0) {
-        cork_command_show_help(&root, "Missing entity and section names.");
-        exit(EXIT_FAILURE);
-    } else if (argc == 1) {
-        cork_command_show_help(&root, "Missing section name.");
-        exit(EXIT_FAILURE);
-    } else if (argc > 2) {
-        cork_command_show_help(&root, "Too many names provided.");
+        cork_command_show_help(&root, "Missing plugin name.");
         exit(EXIT_FAILURE);
     }
 
-    yaml_emitter_initialize(&emit);
-    yaml_emitter_set_output_file(&emit, stdout);
-    yaml_emitter_set_break(&emit, YAML_LN_BREAK);
-    yaml_emitter_set_canonical(&emit, true);
-    yaml_emitter_set_encoding(&emit, YAML_UTF8_ENCODING);
-    yaml_emitter_set_unicode(&emit, false);
+    reg = pvt_registry_new();
+    registry_add_paths(reg);
 
-    reg = pvt_registry_new(registry_path_count(), registry_paths_get());
-    if (pvt_registry_load_section(reg, argv[0], argv[1], &doc) != 0) {
-        fprintf(stderr, "%s\n", cork_error_message());
-        exit(EXIT_FAILURE);
+    for (i = 0; i < argc; i++) {
+        struct pvt_plugin_descriptor  *desc;
+
+        if (i > 0) {
+            printf("\n");
+        }
+
+        desc = pvt_registry_get_descriptor(reg, argv[i]);
+        if (desc == NULL) {
+            printf("%s\n", cork_error_message());
+        } else {
+            printf("Plugin:       %s\n"
+                   "Descriptor:   %s\n"
+                   "Library:      %s\n"
+                   "              %s\n",
+                   desc->name, desc->descriptor_path,
+                   desc->library_path, desc->loader_name);
+
+            if (desc->dependencies != NULL) {
+                size_t  j;
+                for (j = 0; j < desc->dependency_count; j++) {
+                    if (j == 0) {
+                        printf("Dependencies: %s", desc->dependencies[j]);
+                    } else {
+                        printf(", %s", desc->dependencies[j]);
+                    }
+                }
+                printf("\n");
+            }
+        }
     }
 
-    if (yaml_emitter_dump(&emit, &doc) == 0) {
-        fprintf(stderr, "%s\n", emit.problem);
-        exit(EXIT_FAILURE);
-    }
-
-    yaml_document_delete(&doc);
-    yaml_emitter_delete(&emit);
     pvt_registry_free(reg);
     registry_paths_done();
     exit(EXIT_SUCCESS);
