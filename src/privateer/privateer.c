@@ -293,8 +293,16 @@ static struct cork_command  root =
  * Driver
  */
 
+/* This is a hack to force the linker to link this program with
+ * libprivateer-tests.  (For some of our test cases, we're going to try to load
+ * symbols from that library at runtime, via dlopen and dlsym, and we don't want
+ * the linker to outthink us.) */
+extern struct pvt_loader  pvt_alpha;
+static struct pvt_loader  *dummy;
+
 int
 main(int argc, char **argv)
 {
+    dummy = &pvt_alpha;
     return cork_command_main(&root, argc, argv);
 }
