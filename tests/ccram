@@ -26,5 +26,6 @@ fi
 
 export ROOT
 
+LD_LIBRARY_PATH="$PWD/src:$LD_LIBRARY_PATH" \
 PATH="$PWD/src:$PATH" \
   "$CRAM" "$@" "$TESTS"
