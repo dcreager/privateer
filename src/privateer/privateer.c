@@ -175,11 +175,9 @@ get_run(int argc, char **argv)
             printf("%s\n", cork_error_message());
         } else {
             printf("Plugin:       %s\n"
-                   "Descriptor:   %s\n"
                    "Library:      %s\n"
                    "Loader:       %s\n",
                    desc->name,
-                   desc->descriptor_path,
                    desc->library_path == NULL? "[default]": desc->library_path,
                    desc->loader_name);
 

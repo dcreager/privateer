@@ -282,7 +282,7 @@ pvt_plugin_new(struct pvt_plugin_descriptor *desc)
             raw_library_name = "[default]";
         }
         pvt_bad_library("Cannot load symbol %s from %s for plugin %s\n%s",
-                        raw_library_name, desc->loader_name,
+                        desc->loader_name, raw_library_name,
                         desc->name, lib_error);
         dlclose(library);
         pvt_plugin_descriptor_free(desc);
@@ -290,7 +290,7 @@ pvt_plugin_new(struct pvt_plugin_descriptor *desc)
         return NULL;
     } else if (loader == NULL) {
         pvt_bad_library("No symbol named %s in %s for plugin %s",
-                        raw_library_name, desc->loader_name, desc->name);
+                        desc->loader_name, raw_library_name, desc->name);
         dlclose(library);
         pvt_plugin_descriptor_free(desc);
         cork_buffer_done(&buf);
