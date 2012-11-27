@@ -7,10 +7,12 @@
 # details.
 # ----------------------------------------------------------------------
 
-include_directories(../include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_BINARY_DIR}/include)
+
 
 #-----------------------------------------------------------------------
-# Build the library
+# libprivateer
 
 set(LIBPRIVATEER_SRC
     libprivateer/registry.c
@@ -21,6 +23,7 @@ set_target_properties(libprivateer PROPERTIES
     OUTPUT_NAME privateer
     SOVERSION 0.0.0)
 target_link_libraries(libprivateer
+    dl
     ${YAML_LIBRARIES}
     ${CORK_LIBRARIES}
     ${CLOG_LIBRARIES}
@@ -29,13 +32,33 @@ target_link_libraries(libprivateer
 install(TARGETS libprivateer DESTINATION lib)
 
 
+#-----------------------------------------------------------------------
+# libprivateer-tests
+
+set(LIBPRIVATEER_TESTS_SRC
+    libprivateer-tests/alpha.c
+    libprivateer-tests/beta.c
+    libprivateer-tests/gamma.c
+)
+
+add_library(libprivateer-tests SHARED ${LIBPRIVATEER_TESTS_SRC})
+set_target_properties(libprivateer-tests PROPERTIES
+    OUTPUT_NAME privateer-tests
+    SOVERSION 0.0.0)
+target_link_libraries(libprivateer-tests
+)
+
+
+#-----------------------------------------------------------------------
+# privateer
+
 set(PRIVATEER_SRC
     privateer/privateer.c
 )
 
 add_executable(privateer ${PRIVATEER_SRC})
-target_link_libraries(privateer libprivateer)
-install(TARGETS privateer DESTINATION bin)
+target_link_libraries(privateer libprivateer libprivateer-tests)
+
 
 #-----------------------------------------------------------------------
 # Generate the pkg-config file

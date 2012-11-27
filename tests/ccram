@@ -8,6 +8,14 @@ else
     CRAM=cram
 fi
 
+if [ "$1" == "--root" ]; then
+    shift
+    ROOT="$1"
+    shift
+else
+    ROOT=$(dirname $PWD)
+fi
+
 if [ "$1" == "--tests" ]; then
     shift
     TESTS="$1"
@@ -16,6 +24,8 @@ else
     TESTS=../tests
 fi
 
+export ROOT
+
+LD_LIBRARY_PATH="$PWD/src:$LD_LIBRARY_PATH" \
 PATH="$PWD/src:$PATH" \
-TESTS=$(realpath $TESTS) \
   "$CRAM" "$@" "$TESTS"

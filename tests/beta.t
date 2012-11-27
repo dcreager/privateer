@@ -1,25 +1,18 @@
-  $ privateer -r $TESTS/reg1 beta name
-  ---
-  !!map {
-    ? !!str "name"
-    : !!str "beta",
-  }
+  $ privateer get -r $ROOT/tests/reg1 beta
+  Plugin:       beta
+  Library:      privateer-tests
+  Loader:       pvt_beta
+  Dependencies: alpha
 
-  $ privateer -r $TESTS/reg1 beta options
-  Cannot find beta:options in registry
-  [1]
+  $ privateer get -r $ROOT/tests/reg2 beta
+  No plugin named "beta"
 
-  $ privateer -r $TESTS/reg1 -r $TESTS/reg2 beta options
-  ---
-  !!map {
-    ? !!str "verbose"
-    : !!str "false",
-    ? !!str "dependencies"
-    : !!seq [
-      !!str "alpha",
-    ],
-  }
+  $ privateer get -r $ROOT/tests/reg1 -r $ROOT/tests/reg2 beta
+  Plugin:       beta
+  Library:      privateer-tests
+  Loader:       pvt_beta
+  Dependencies: alpha
 
-  $ privateer -r $TESTS/reg1 beta missing
-  Cannot find beta:missing in registry
-  [1]
+  $ privateer load -r $ROOT/tests/reg1 beta
+  Loading alpha.
+  Loading beta.

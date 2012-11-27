@@ -1,15 +1,19 @@
-  $ privateer -r $TESTS/reg1 gamma name
-  Cannot find gamma:name in registry
-  [1]
+  $ privateer get -r $ROOT/tests/reg1 gamma
+  No plugin named "gamma"
 
-  $ privateer -r $TESTS/reg1 gamma options
-  Cannot find gamma:options in registry
-  [1]
+  $ privateer get -r $ROOT/tests/reg2 gamma
+  Plugin:       gamma
+  Library:      privateer-tests
+  Loader:       pvt_gamma
+  Dependencies: beta
 
-  $ privateer -r $TESTS/reg1 -r $TESTS/reg2 gamma options
-  Cannot find gamma:options in registry
-  [1]
+  $ privateer get -r $ROOT/tests/reg1 -r $ROOT/tests/reg2 gamma
+  Plugin:       gamma
+  Library:      privateer-tests
+  Loader:       pvt_gamma
+  Dependencies: beta
 
-  $ privateer -r $TESTS/reg1 gamma missing
-  Cannot find gamma:missing in registry
-  [1]
+  $ privateer load -r $ROOT/tests/reg1 -r $ROOT/tests/reg2 gamma
+  Loading alpha.
+  Loading beta.
+  Loading gamma.

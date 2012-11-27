@@ -49,6 +49,7 @@ if (CRAM_EXECUTABLE)
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMAND ${CMAKE_BINARY_DIR}/ccram
             --cram ${CRAM_EXECUTABLE}
+            --root ${CMAKE_SOURCE_DIR}
             --tests ${CMAKE_CURRENT_SOURCE_DIR}
     )
 else (CRAM_EXECUTABLE)

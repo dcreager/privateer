@@ -1,17 +1,15 @@
-  $ privateer -r $TESTS/reg1 alpha name
-  ---
-  !!map {
-    ? !!str "name"
-    : !!str "alpha",
-  }
+  $ privateer get -r $ROOT/tests/reg1 alpha
+  Plugin:       alpha
+  Library:      [default]
+  Loader:       pvt_alpha
 
-  $ privateer -r $TESTS/reg1 alpha options
-  ---
-  !!map {
-    ? !!str "verbose"
-    : !!str "true",
-  }
+  $ privateer get -r $ROOT/tests/reg2 alpha
+  No plugin named "alpha"
 
-  $ privateer -r $TESTS/reg1 alpha missing
-  Cannot find alpha:missing in registry
-  [1]
+  $ privateer get -r $ROOT/tests/reg1 -r $ROOT/tests/reg2 alpha
+  Plugin:       alpha
+  Library:      [default]
+  Loader:       pvt_alpha
+
+  $ privateer load -r $ROOT/tests/reg1 alpha
+  Loading alpha.
