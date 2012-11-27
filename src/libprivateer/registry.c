@@ -70,7 +70,7 @@ pvt_registry_load_yaml_file(const char *filename, yaml_document_t *dest)
     close(fd);
 
     if (CORK_UNLIKELY(rc == 0)) {
-        pvt_yaml_error(parser.problem);
+        pvt_yaml_error("%s", parser.problem);
         yaml_parser_delete(&parser);
         return -1;
     }
