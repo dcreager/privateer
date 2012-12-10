@@ -14,3 +14,5 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
     FILES_MATCHING PATTERN "*.h")
 
 configure_file(privateer/config.h.in privateer/config.h ESCAPE_QUOTES @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/privateer/config.h
+    DESTINATION include/privateer)
