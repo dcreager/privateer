@@ -1,10 +1,13 @@
-  $ privateer get -r $ROOT/tests/nonexistent-reg alpha
+  $ cp -R $ROOT/tests/circular .
+  $ cp -R $ROOT/tests/reg1 .
+
+  $ privateer get -r ./nonexistent-reg alpha
   No such file or directory
   [1]
 
-  $ privateer get -r $ROOT/tests/reg1 missing
+  $ privateer get -r ./reg1 missing
   No plugin named "missing"
 
-  $ privateer load -r $ROOT/tests/circular alpha
+  $ privateer load -r ./circular alpha
   Circular dependency when loading alpha
   [1]

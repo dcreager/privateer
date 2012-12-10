@@ -493,6 +493,25 @@ pvt_registry_add_directory(struct pvt_registry *self, const char *path,
 
 
 /*-----------------------------------------------------------------------
+ * Iteration
+ */
+
+int
+pvt_registry_iterate_plugins(struct pvt_registry *self,
+                             pvt_plugin_callback callback, void *ud)
+{
+    struct cork_hash_table_iterator  iter;
+    struct cork_hash_table_entry  *entry;
+    cork_hash_table_iterator_init(&self->plugins, &iter);
+    while ((entry = cork_hash_table_iterator_next(&iter)) != NULL) {
+        struct pvt_plugin  *plugin = entry->value;
+        rii_check(callback(self, plugin->desc, ud));
+    }
+    return 0;
+}
+
+
+/*-----------------------------------------------------------------------
  * Loading everything
  */
 
