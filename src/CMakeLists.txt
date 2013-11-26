@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # ----------------------------------------------------------------------
-# Copyright © 2011, RedJack, LLC.
+# Copyright © 2011-2013, RedJack, LLC.
 # All rights reserved.
 #
-# Please see the LICENSE.txt file in this distribution for license
-# details.
+# Please see the COPYING file in this distribution for license details.
 # ----------------------------------------------------------------------
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_BINARY_DIR}/include)
 
 
@@ -15,7 +15,7 @@ include_directories(${CMAKE_BINARY_DIR}/include)
 # libprivateer
 
 set(LIBPRIVATEER_SRC
-    libprivateer/registry.c
+    libprivateer/plugins.c
 )
 
 # Update the VERSION and SOVERSION properties below according to the following
@@ -66,6 +66,7 @@ set(LIBPRIVATEER_TESTS_SRC
     libprivateer-tests/alpha.c
     libprivateer-tests/beta.c
     libprivateer-tests/gamma.c
+    libprivateer-tests/circular.c
 )
 
 add_library(libprivateer-tests SHARED ${LIBPRIVATEER_TESTS_SRC})
@@ -74,6 +75,7 @@ set_target_properties(libprivateer-tests PROPERTIES
     VERSION 0.0.0
     SOVERSION 0)
 target_link_libraries(libprivateer-tests
+    libprivateer
 )
 
 

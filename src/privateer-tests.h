@@ -7,17 +7,14 @@
  * ----------------------------------------------------------------------
  */
 
-#include <stdio.h>
-
-#include <clogger.h>
+#ifndef PRIVATEER_TESTS_H
+#define PRIVATEER_TESTS_H
 
 #include "privateer.h"
-#include "privateer-tests.h"
 
-#define CLOG_CHANNEL  "gamma"
+pvt_declare_plugin(pvt_alpha);
+pvt_declare_plugin(pvt_beta);
+pvt_declare_plugin(pvt_gamma);
+pvt_declare_plugin(pvt_circular);
 
-pvt_define_plugin(pvt_gamma)
-{
-    pvt_require_plugin(pvt_beta);
-    clog_debug("Load gamma");
-}
+#endif /* PRIVATEER_TESTS_H */

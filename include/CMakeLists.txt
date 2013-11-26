@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 # ----------------------------------------------------------------------
-# Copyright © 2011, RedJack, LLC.
+# Copyright © 2011-2013, RedJack, LLC.
 # All rights reserved.
 #
-# Please see the LICENSE.txt file in this distribution for license
-# details.
+# Please see the COPYING file in this distribution for license details.
 # ----------------------------------------------------------------------
 
 configure_file(privateer/config.h.in privateer/config.h ESCAPE_QUOTES @ONLY)

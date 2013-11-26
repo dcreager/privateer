@@ -1,19 +1,23 @@
 /* -*- coding: utf-8 -*-
  * ----------------------------------------------------------------------
- * Copyright © 2012, RedJack, LLC.
+ * Copyright © 2012-2013, RedJack, LLC.
  * All rights reserved.
  *
- * Please see the LICENSE.txt file in this distribution for license
- * details.
+ * Please see the COPYING file in this distribution for license details.
  * ----------------------------------------------------------------------
  */
 
 #include <stdio.h>
 
-#include "privateer.h"
+#include <clogger.h>
 
-pvt_define_loader(pvt_beta)
+#include "privateer.h"
+#include "privateer-tests.h"
+
+#define CLOG_CHANNEL  "beta"
+
+pvt_define_plugin(pvt_beta)
 {
-    printf("Loading beta.\n");
-    return 0;
+    pvt_require_plugin(pvt_alpha);
+    clog_debug("Load beta");
 }

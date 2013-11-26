@@ -1,5 +1,0 @@
-name: gamma
-library: privateer-tests
-loader: pvt_gamma
-dependencies:
-  - beta

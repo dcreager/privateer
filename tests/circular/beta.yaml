@@ -1,5 +1,0 @@
-name: beta
-library: privateer-tests
-loader: pvt_beta
-dependencies:
-  - alpha

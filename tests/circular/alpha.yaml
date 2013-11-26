@@ -1,4 +1,0 @@
-name: alpha
-loader: pvt_alpha
-dependencies:
-  - gamma

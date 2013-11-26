@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 # ----------------------------------------------------------------------
-# Copyright © 2011, RedJack, LLC.
+# Copyright © 2011-2013, RedJack, LLC.
 # All rights reserved.
 #
-# Please see the LICENSE.txt file in this distribution for license
-# details.
+# Please see the COPYING file in this distribution for license details.
 # ----------------------------------------------------------------------
 
-include_directories(../include)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_BINARY_DIR}/include)
 link_directories(${CMAKE_CURRENT_BINARY_DIR}/../src)
 
 #-----------------------------------------------------------------------
@@ -28,8 +29,8 @@ macro(make_test test_name)
     add_test(${test_name} ${test_name})
 endmacro(make_test)
 
-# Add calls to make_test for each .c test case in the tests/ directory.
-# make_test(test-foo)
+make_test(test-dynamic-plugins)
+make_test(test-static-plugins)
 
 #-----------------------------------------------------------------------
 # Command-line tests
