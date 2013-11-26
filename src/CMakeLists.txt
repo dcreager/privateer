@@ -56,7 +56,7 @@ target_link_libraries(libprivateer
     ${CLOG_LIBRARIES}
 )
 
-install(TARGETS libprivateer DESTINATION lib)
+install(TARGETS libprivateer DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 
 #-----------------------------------------------------------------------
@@ -94,4 +94,4 @@ target_link_libraries(privateer libprivateer libprivateer-tests)
 set(prefix ${CMAKE_INSTALL_PREFIX})
 configure_file(privateer.pc.in ${CMAKE_CURRENT_BINARY_DIR}/privateer.pc @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/privateer.pc
-        DESTINATION lib/pkgconfig)
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
